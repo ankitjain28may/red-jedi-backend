@@ -48,7 +48,20 @@ class GitAuthController extends Controller
     public function show($id)
     {
         $user = Socialite::driver('github')->user();
-        return $user;
+        $token = $user->token;
+        $refreshToken = $user->refreshToken; // not always provided
+        $expiresIn = $user->expiresIn;
+
+        // OAuth One Providers
+        $token = $user->token;
+
+        // All Providers
+        $id = $user->getId();
+        $nickname = $user->getNickname();
+        $name = $user->getName();
+        $email = $user->getEmail();
+        $avatar = $user->getAvatar();
+        return $name;
     }
 
     /**
