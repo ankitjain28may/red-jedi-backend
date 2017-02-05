@@ -191,15 +191,17 @@ class GitAuthController extends Controller
                 $commits = json_decode($commits, true);
 
                 $totalCommits = 0;
+                if ($commits != null) {
+                    foreach ($commits as $option => $check) {
+                        if ($check['author']['id'] == $id->userId) {
+                            $repo->weeklyCommits = end($check['weeks'])['c'];
+                            $weeklyCommits += $repo->weeklyCommits;
+                        }
 
-                foreach ($commits as $option => $check) {
-                    if ($check['author']['id'] == $id->userId) {
-                        $repo->weeklyCommits = end($check['weeks'])['c'];
-                        $weeklyCommits += $repo->weeklyCommits;
+                        $totalCommits += end($check['weeks'])['c'];
                     }
-
-                    $totalCommits += end($check['weeks'])['c'];
                 }
+
                 $repo->totalWeeklyCommits = $totalCommits;
 
                 $repo->save();
