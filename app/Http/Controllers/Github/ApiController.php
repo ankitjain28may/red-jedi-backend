@@ -22,8 +22,10 @@ class ApiController extends Controller
         // 200
         // echo $res->getHeaderLine('content-type');
         // 'application/json; charset=utf8'
-         $result = $res->getBody();
-        dd($result);
+        $result = $res->getBody();
+        $result = json_decode($result);
+        return $result;
+
         // '{"id": 1420053, "name": "guzzle", ...}'
 
         // Send an asynchronous request.
