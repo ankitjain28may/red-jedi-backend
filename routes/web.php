@@ -16,3 +16,4 @@ Route::get('/', function () {
 });
 
 Route::resource('/api/github', 'Github\GitAuthController');
+Route::resource('/api/guzz', 'Github\ApiController');
