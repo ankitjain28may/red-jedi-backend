@@ -17,7 +17,7 @@ class ApiController extends Controller
     public function index()
     {
         $client = new Client();
-        $res = $client->request('GET', 'https://ankitjain28may.github.io');
+        $res = $client->request('GET', 'https://api.github.com/repos/ankitjain28may/openchat');
         // echo $res->getStatusCode();
         // 200
         // echo $res->getHeaderLine('content-type');
