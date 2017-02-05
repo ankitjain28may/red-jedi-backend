@@ -24,9 +24,7 @@ class ApiController extends Controller
         // 'application/json; charset=utf8'
         $result = $res->getBody();
 
-        dd($result);
-
-        $result = json_decode($result);
+        $result = json_decode($result, true);
         return $result;
 
         // '{"id": 1420053, "name": "guzzle", ...}'
