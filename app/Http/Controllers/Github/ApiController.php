@@ -23,6 +23,9 @@ class ApiController extends Controller
         // echo $res->getHeaderLine('content-type');
         // 'application/json; charset=utf8'
         $result = $res->getBody();
+
+        dd($result);
+
         $result = json_decode($result);
         return $result;
 
