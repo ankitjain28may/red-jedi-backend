@@ -81,13 +81,15 @@ class ApiController extends Controller
 
                         $totalCommits = 0;
 
-                        foreach ($commits as $option => $check) {
-                            if ($check['author']['id'] == $user->userId) {
-                                $repo->weeklyCommits = end($check['weeks'])['c'];
-                                $weeklyCommits += $repo->weeklyCommits;
-                            }
+                        if ($commits != null) {
+                            foreach ($commits as $option => $check) {
+                                if ($check['author']['id'] == $user->userId) {
+                                    $repo->weeklyCommits = end($check['weeks'])['c'];
+                                    $weeklyCommits += $repo->weeklyCommits;
+                                }
 
-                            $totalCommits += end($check['weeks'])['c'];
+                                $totalCommits += end($check['weeks'])['c'];
+                            }
                         }
                         $repo->totalWeeklyCommits = $totalCommits;
 
