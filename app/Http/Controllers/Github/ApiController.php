@@ -60,38 +60,38 @@ class ApiController extends Controller
                     if (!$validator->fails()) {
                         $repo = new Repo;
                         $repo->userId = $user->id;
-                        $repo->repoId = $value['id'];
                     } else {
                         $repo = Repo::where(['repoId' =>$value['id'], 'userId' => $user->id])->first();
                     }
 
-                    // if($keys == 1)
-                    //     return $value;
-                    $repo->name = $value['name'];
-                    $repo->fullName = $value['full_name'];
-                    $repo->description = $value['description'];
-                    $repo->stars = $value['stargazers_count'];
-                    $repo->forks = $value['forks_count'];
-                    $repo->language = $value['language'];
+                    if ($value != null) {
+                        $repo->repoId = $value['id'];
+                        $repo->name = $value['name'];
+                        $repo->fullName = $value['full_name'];
+                        $repo->description = $value['description'];
+                        $repo->stars = $value['stargazers_count'];
+                        $repo->forks = $value['forks_count'];
+                        $repo->language = $value['language'];
 
-                    $res = $client->request(
-                        'GET', 'repos/'.$value['full_name'].'/stats/participation?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
-                    );
+                        $res = $client->request(
+                            'GET', 'repos/'.$value['full_name'].'/stats/participation?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+                        );
 
-                    $commits = $res->getBody();
-                    $commits = json_decode($commits, true);
+                        $commits = $res->getBody();
+                        $commits = json_decode($commits, true);
 
-                    if ($commits != null) {
-                        if ($commits['owner'] != null) {
-                            $repo->weeklyCommits = end($commits['owner']);
-                            $weeklyCommits += $repo->weeklyCommits;
+                        if ($commits != null) {
+                            if ($commits['owner'] != null) {
+                                $repo->weeklyCommits = end($commits['owner']);
+                                $weeklyCommits += $repo->weeklyCommits;
+                            }
+
+                            if ($commits['all'] != null) {
+                                $repo->totalWeeklyCommits = end($commits['all']);
+                            }
                         }
-
-                        if ($commits['all'] != null) {
-                            $repo->totalWeeklyCommits = end($commits['all']);
-                        }
+                        $repo->save();
                     }
-                    $repo->save();
                 }
             }
             User::find($user->id)->update(['weeklyCommits' => $weeklyCommits]);
