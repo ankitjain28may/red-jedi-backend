@@ -150,11 +150,11 @@ class GitAuthController extends Controller
 
             $validator = Validator::make(
                 [
-                'userId' => $value['id'],
+                'repoId' => $value['id'],
                 'fullName' => $value['full_name']
                 ],
                 [
-                'userId' => 'required|unique:repos',
+                'repoId' => 'required|unique:repos',
                 'fullName' => 'required|unique:repos',
                 ]
             );

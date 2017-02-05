@@ -46,11 +46,11 @@ class ApiController extends Controller
 
                     $validator = Validator::make(
                         [
-                        'userId' => $value['id'],
+                        'repoId' => $value['id'],
                         'fullName' => $value['full_name']
                         ],
                         [
-                        'userId' => 'required|unique:repos',
+                        'repoId' => 'required|unique:repos',
                         'fullName' => 'required|unique:repos',
                         ]
                     );
@@ -59,7 +59,7 @@ class ApiController extends Controller
                         $repo = new Repo;
                         $repo->userId = $user->id;
                     } else {
-                        $repo = Repo::where(['repoId' =>$value['id'], 'userId' => $user->id])->first();
+                        $repo = Repo::where(['repoId' => $value['id'], 'userId' => $user->id])->first();
                     }
 
                     if ($value != null) {
