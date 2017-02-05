@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Github;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Model\User;
+use App\Model\Repo;
+use Illuminate\Support\Facades\Input;
+use Validator;
 use GuzzleHttp\Client;
-
+use Redirect;
 
 class ApiController extends Controller
 {
@@ -16,25 +20,74 @@ class ApiController extends Controller
      */
     public function index()
     {
-        $client = new Client();
-        $res = $client->request('GET', 'https://api.github.com/repos/ankitjain28may/openchat');
-        // echo $res->getStatusCode();
-        // 200
-        // echo $res->getHeaderLine('content-type');
-        // 'application/json; charset=utf8'
-        $result = $res->getBody();
+        foreach (User::all() as $key => $user) {
 
-        $result = json_decode($result, true);
-        return $result;
+            $weeklyCommits = 0;
 
-        // '{"id": 1420053, "name": "guzzle", ...}'
+            $client = new Client();
+            $res = $client->request(
+                'GET', 'https://api.github.com/users/'.$user->login.'/repos?type=owner&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+            );
 
-        // Send an asynchronous request.
-        // $request = new \GuzzleHttp\Psr7\Request('GET', 'http://httpbin.org');
-        // $promise = $client->sendAsync($request)->then(function ($response) {
-        //     return 'I completed! ' . $response->getBody();
-        // });
-        // $promise->wait();
+            $result = $res->getBody();
+
+            $result = json_decode($result, true);
+
+            Repo::where(['userId' => $user->id])->update(['weeklyCommits' => 0, 'totalWeeklyCommits' => 0]);
+
+            Repo::where(['userId' => $user->id])->get();
+
+            foreach ($result as $key => $value) {
+
+                $validator = Validator::make(
+                    [
+                    'userId' => $value['id'],
+                    'fullName' => $value['full_name']
+                    ],
+                    [
+                    'userId' => 'required|unique:repos',
+                    'fullName' => 'required|unique:repos',
+                    ]
+                );
+
+                if (!$validator->fails()) {
+                    $repo = new Repo;
+                    $repo->userId = $user->id;
+                    $repo->repoId = $value['id'];
+                } else {
+                    $repo = Repo::where(['repoId' =>$value['id'], 'userId' => $user->id])->first();
+                }
+
+                $repo->name = $value['name'];
+                $repo->fullName = $value['full_name'];
+                $repo->description = $value['description'];
+                $repo->stars = $value['stargazers_count'];
+                $repo->forks = $value['forks_count'];
+                $repo->language = $value['language'];
+
+                $res = $client->request(
+                    'GET', 'https://api.github.com/repos/'.$value['full_name'].'/stats/participation?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+                );
+
+                $commits = $res->getBody();
+                $commits = json_decode($commits, true);
+
+                if ($commits != null) {
+                    if ($commits['owner'] != null) {
+                        $repo->weeklyCommits = end($commits['owner']);
+                        $weeklyCommits += $repo->weeklyCommits;
+                    }
+
+                    if ($commits['all'] != null) {
+                        $repo->totalWeeklyCommits = end($commits['all']);
+                    }
+                }
+                $repo->save();
+            }
+
+            User::find($user->id)->update(['weeklyCommits' => $weeklyCommits]);
+        }
+        return Redirect::to('/');
     }
 
     /**

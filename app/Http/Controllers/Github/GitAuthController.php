@@ -11,7 +11,6 @@ use App\Model\Repo;
 use Illuminate\Support\Facades\Input;
 use Validator;
 use GuzzleHttp\Client;
-use GuzzleHttp\Promise;
 
 class GitAuthController extends Controller
 {
@@ -136,6 +135,7 @@ class GitAuthController extends Controller
             $user->save();
         }
         $id = User::where('userId', $getUser['userId'])->first();
+        $weeklyCommits = 0;
 
         $client = new Client();
         $res = $client->request(
@@ -161,6 +161,8 @@ class GitAuthController extends Controller
 
             if (!$validator->fails()) {
                 $repo = new Repo;
+                $repo->userId = $id->id;
+                $repo->repoId = $value['id'];
             } else {
                 $repo = Repo::where(['repoId' =>$value['id'], 'userId' => $id->id])->first();
             }
@@ -170,37 +172,31 @@ class GitAuthController extends Controller
             $repo->description = $value['description'];
             $repo->stars = $value['stargazers_count'];
             $repo->forks = $value['forks_count'];
-            $repo->repoId = $value['id'];
             $repo->language = $value['language'];
 
             $res = $client->request(
                 'GET', 'https://api.github.com/repos/'.$value['full_name'].'/stats/participation?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
             );
 
-            // $request = new \GuzzleHttp\Psr7\Request('GET', 'https://api.github.com/repos/'.$value['full_name'].'/stats/participation?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET'));
-
-            // $promise = $client->sendAsync($request)->then(function ($response) {
-            //     return 'I completed! ' . $response->getBody();
-            // });
-            // $promise->wait();
-
             $commits = $res->getBody();
             $commits = json_decode($commits, true);
+
             if ($commits != null) {
                 if ($commits['owner'] != null) {
                     $repo->weeklyCommits = end($commits['owner']);
+                    $weeklyCommits += $repo->weeklyCommits;
                 }
 
                 if ($commits['all'] != null) {
                     $repo->totalWeeklyCommits = end($commits['all']);
                 }
             }
-
-            $repo->userId = $id->id;
-
             $repo->save();
         }
-        return Redirect::to('/api/github/1');
+
+        User::find($id->id)->update(['weeklyCommits' => $weeklyCommits]);
+
+        return Redirect::to('http://redjedi.surge.sh/');
 
     }
 
