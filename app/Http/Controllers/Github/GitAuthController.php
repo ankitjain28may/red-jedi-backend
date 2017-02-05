@@ -6,7 +6,11 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Socialite;
 use Redirect;
-
+use App\Model\User;
+use App\Model\Repo;
+use Illuminate\Support\Facades\Input;
+use Validator;
+use GuzzleHttp\Client;
 
 class GitAuthController extends Controller
 {
@@ -49,21 +53,7 @@ class GitAuthController extends Controller
      */
     public function show($id)
     {
-        $user = Socialite::driver('github')->user();
-        $token = $user->token;
-        $refreshToken = $user->refreshToken; // not always provided
-        $expiresIn = $user->expiresIn;
-
-        // OAuth One Providers
-        $token = $user->token;
-
-        // All Providers
-        $id = $user->getId();
-        $nickname = $user->getNickname();
-        $name = $user->getName();
-        $email = $user->getEmail();
-        $avatar = $user->getAvatar();
-        return var_dump($user);
+        return Repo::all();
     }
 
     /**
@@ -99,4 +89,109 @@ class GitAuthController extends Controller
     {
         //
     }
+
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function add()
+    {
+        $user = Socialite::driver('github')->user();
+
+        // OAuth One Providers
+        $token = $user->token;
+
+        $refreshToken = $user->refreshToken; // not always provided
+        $expiresIn = $user->expiresIn;
+
+
+        // All Providers
+        $getUser = [
+            'userId' => $user->getId(),
+            'login' => $user->getNickname(),
+            'name' => $user->getName(),
+            'email' => $user->getEmail()
+        ];
+
+
+        $validator = Validator::make($getUser, [
+            'email' => 'email|unique:users',
+            'userId' => 'required|unique:users',
+        ]);
+
+        if (!$validator->fails()) {
+
+            $user = new User;
+            $user->name = $getUser['name'];
+            $user->email = $getUser['email'];
+            $user->login = $getUser['login'];
+            $user->userId = $getUser['userId'];
+            $user->weeklyCommits = 0;
+            $user->totalCommits = 0;
+
+            $user->save();
+        }
+        $id = User::where('userId', $getUser['userId'])->first();
+
+        $client = new Client();
+        $res = $client->request(
+            'GET', 'https://api.github.com/users/'.$id->login.'/repos?type=owner&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+        );
+
+        $result = $res->getBody();
+
+        $result = json_decode($result, true);
+
+        foreach ($result as $key => $value) {
+
+            $validator = Validator::make(
+                [
+                'userId' => $value['id'],
+                'fullName' => $value['full_name']
+                ],
+                [
+                'userId' => 'required|unique:repos',
+                'fullName' => 'required|unique:repos',
+                ]
+            );
+
+            if (!$validator->fails()) {
+                $repo = new Repo;
+            } else {
+                $repo = Repo::where(['repoId' =>$value['id'], 'userId' => $id->id])->first();
+            }
+
+            $repo->name = $value['name'];
+            $repo->fullName = $value['full_name'];
+            $repo->description = $value['description'];
+            $repo->stars = $value['stargazers_count'];
+            $repo->forks = $value['forks_count'];
+            $repo->repoId = $value['id'];
+            $repo->language = $value['language'];
+
+            $res = $client->request(
+                'GET', 'https://api.github.com/repos/'.$value['full_name'].'/stats/commit_activity?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+            );
+
+            $commits = $res->getBody();
+            $commits = json_decode($commits, true);
+            if ($commits['owner'] != null) {
+                $repo->weeklyCommits = end($commits['owner']);
+            }
+
+            if ($commits['all'] != null) {
+                $repo->totalWeeklyCommits = end($commits['all']);
+            }
+
+            $repo->userId = $id->id;
+
+            $repo->save();
+        }
+        return Redirect::to('/api/github/1');
+
+    }
+
 }

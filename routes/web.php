@@ -16,4 +16,7 @@ Route::get('/', function () {
 });
 
 Route::resource('/api/github', 'Github\GitAuthController');
+
+Route::get('/api/github/user/callback', 'Github\GitAuthController@add');
+
 Route::resource('/api/guzz', 'Github\ApiController');
