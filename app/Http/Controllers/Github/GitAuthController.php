@@ -61,7 +61,7 @@ class GitAuthController extends Controller
         $name = $user->getName();
         $email = $user->getEmail();
         $avatar = $user->getAvatar();
-        return $name;
+        return var_dump($user);
     }
 
     /**
