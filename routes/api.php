@@ -17,4 +17,4 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/leaderboard', 'Github\LeaderboardController@index');
+Route::middleware('cors')->get('/leaderboard', 'Github\LeaderboardController@index');
