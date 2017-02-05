@@ -16,11 +16,12 @@ class Repo extends Migration
         Schema::create('repos', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->string('fullName')->unique();
+            $table->string('fullName');
             $table->text('description')->nullable();
             $table->string('stars')->nullable();
             $table->string('forks')->nullable();
-            $table->string('repoId')->unique();
+            $table->string('repoId');
+            $table->string('identifier')->unique();
             $table->string('language')->nullable();
             $table->string('weeklyCommits')->nullable();
             $table->string('totalWeeklyCommits')->nullable();

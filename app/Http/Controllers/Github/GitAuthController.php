@@ -135,63 +135,73 @@ class GitAuthController extends Controller
             $user->save();
         }
         $id = User::where('userId', $getUser['userId'])->first();
+
         $weeklyCommits = 0;
 
-        $client = new Client();
-        $res = $client->request(
-            'GET', 'https://api.github.com/users/'.$id->login.'/repos?type=owner&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
-        );
+        $client = new Client(['base_uri' => 'https://api.github.com/']);
 
-        $result = $res->getBody();
+        $api = [
+            0 => 'users/'.$id->login.'/repos?type=owner&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET'),
+            1 => 'users/'.$id->login.'/repos?type=member&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+        ];
 
-        $result = json_decode($result, true);
 
-        foreach ($result as $key => $value) {
-
-            $validator = Validator::make(
-                [
-                'repoId' => $value['id'],
-                'fullName' => $value['full_name']
-                ],
-                [
-                'repoId' => 'required|unique:repos',
-                'fullName' => 'required|unique:repos',
-                ]
-            );
-
-            if (!$validator->fails()) {
-                $repo = new Repo;
-                $repo->userId = $id->id;
-                $repo->repoId = $value['id'];
-            } else {
-                $repo = Repo::where(['repoId' =>$value['id'], 'userId' => $id->id])->first();
-            }
-
-            $repo->name = $value['name'];
-            $repo->fullName = $value['full_name'];
-            $repo->description = $value['description'];
-            $repo->stars = $value['stargazers_count'];
-            $repo->forks = $value['forks_count'];
-            $repo->language = $value['language'];
-
+        foreach ($api as $keys => $url) {
             $res = $client->request(
-                'GET', 'https://api.github.com/repos/'.$value['full_name'].'/stats/participation?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+                'GET', $url
             );
 
-            $commits = $res->getBody();
-            $commits = json_decode($commits, true);
+            $result = $res->getBody();
 
-            if ($commits != null) {
-                if ($commits['owner'] != null) {
-                    $repo->weeklyCommits = end($commits['owner']);
-                    $weeklyCommits += $repo->weeklyCommits;
+            $result = json_decode($result, true);
+
+            foreach ($result as $key => $value) {
+
+                $identifier = $value['id'].":".$id->id;
+                $validator = Validator::make(
+                    [
+                    'identifier' => $identifier,
+                    ],
+                    [
+                    'identifier' => 'required|unique:repos',
+                    ]
+                );
+
+                if (!$validator->fails()) {
+                    $repo = new Repo;
+                    $repo->userId = $id->id;
+                    $repo->repoId = $value['id'];
+                    $repo->identifier = $identifier;
+                } else {
+                    $repo = Repo::where(['identifier' => $identifier])->first();
                 }
 
-                if ($commits['all'] != null) {
-                    $repo->totalWeeklyCommits = end($commits['all']);
+                $repo->name = $value['name'];
+                $repo->fullName = $value['full_name'];
+                $repo->description = $value['description'];
+                $repo->stars = $value['stargazers_count'];
+                $repo->forks = $value['forks_count'];
+                $repo->language = $value['language'];
+
+                $res = $client->request(
+                    'GET', 'https://api.github.com/repos/'.$value['full_name'].'/stats/participation?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+                );
+
+                $commits = $res->getBody();
+                $commits = json_decode($commits, true);
+
+                if ($commits != null) {
+                    if ($commits['owner'] != null) {
+                        $repo->weeklyCommits = end($commits['owner']);
+                        $weeklyCommits += $repo->weeklyCommits;
+                    }
+
+                    if ($commits['all'] != null) {
+                        $repo->totalWeeklyCommits = end($commits['all']);
+                    }
                 }
+                $repo->save();
             }
-            $repo->save();
         }
 
         User::find($id->id)->update(['weeklyCommits' => $weeklyCommits]);

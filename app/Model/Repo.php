@@ -21,6 +21,6 @@ class Repo extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'fullName', 'description', 'stars', 'forks', 'repoId', 'language', 'weeklyCommits', 'totalWeeklyCommits', 'userId'
+        'name', 'fullName', 'description', 'stars', 'forks', 'repoId', 'identifier', 'language', 'weeklyCommits', 'totalWeeklyCommits', 'userId'
     ];
 }

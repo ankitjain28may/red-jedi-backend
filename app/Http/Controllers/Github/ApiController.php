@@ -27,8 +27,8 @@ class ApiController extends Controller
             $client = new Client(['base_uri' => 'https://api.github.com/']);
 
             $api = [
-            0 => 'users/'.$user->login.'/repos?type=owner&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET'),
-            1 => 'users/'.$user->login.'/repos?type=member&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+                0 => 'users/'.$user->login.'/repos?type=owner&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET'),
+                1 => 'users/'.$user->login.'/repos?type=member&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
             ];
 
             Repo::where(['userId' => $user->id])->update(['weeklyCommits' => 0, 'totalWeeklyCommits' => 0]);
@@ -44,22 +44,23 @@ class ApiController extends Controller
 
                 foreach ($result as $key => $value) {
 
+                    $identifier = $value['id'].":".$user->id;
                     $validator = Validator::make(
                         [
-                        'repoId' => $value['id'],
-                        'fullName' => $value['full_name']
+                        'identifier' => $identifier,
                         ],
                         [
-                        'repoId' => 'required|unique:repos',
-                        'fullName' => 'required|unique:repos',
+                        'identifier' => 'required|unique:repos',
                         ]
                     );
 
                     if (!$validator->fails()) {
                         $repo = new Repo;
                         $repo->userId = $user->id;
+                        $repo->repoId = $value['id'];
+                        $repo->identifier = $identifier;
                     } else {
-                        $repo = Repo::where(['repoId' => $value['id'], 'userId' => $user->id])->first();
+                        $repo = Repo::where(['identifier' => $identifier])->first();
                     }
 
                     if ($value != null) {
