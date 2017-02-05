@@ -173,7 +173,7 @@ class GitAuthController extends Controller
             $repo->language = $value['language'];
 
             $res = $client->request(
-                'GET', 'https://api.github.com/repos/'.$value['full_name'].'/stats/commit_activity?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+                'GET', 'https://api.github.com/repos/'.$value['full_name'].'/stats/participation?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
             );
 
             $commits = $res->getBody();
