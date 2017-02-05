@@ -32,6 +32,7 @@ class ApiController extends Controller
             $result = $res->getBody();
             $result = json_decode($result, true);
 
+            return $this->repoUpdate($result, $user);
             $weeklyCommits += $this->repoUpdate($result, $user);
 
             $res = $client->request(
