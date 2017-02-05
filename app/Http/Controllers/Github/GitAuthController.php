@@ -11,6 +11,7 @@ use App\Model\Repo;
 use Illuminate\Support\Facades\Input;
 use Validator;
 use GuzzleHttp\Client;
+use GuzzleHttp\Promise;
 
 class GitAuthController extends Controller
 {
@@ -176,14 +177,23 @@ class GitAuthController extends Controller
                 'GET', 'https://api.github.com/repos/'.$value['full_name'].'/stats/participation?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
             );
 
+            // $request = new \GuzzleHttp\Psr7\Request('GET', 'https://api.github.com/repos/'.$value['full_name'].'/stats/participation?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET'));
+
+            // $promise = $client->sendAsync($request)->then(function ($response) {
+            //     return 'I completed! ' . $response->getBody();
+            // });
+            // $promise->wait();
+
             $commits = $res->getBody();
             $commits = json_decode($commits, true);
-            if ($commits['owner'] != null) {
-                $repo->weeklyCommits = end($commits['owner']);
-            }
+            if ($commits != null) {
+                if ($commits['owner'] != null) {
+                    $repo->weeklyCommits = end($commits['owner']);
+                }
 
-            if ($commits['all'] != null) {
-                $repo->totalWeeklyCommits = end($commits['all']);
+                if ($commits['all'] != null) {
+                    $repo->totalWeeklyCommits = end($commits['all']);
+                }
             }
 
             $repo->userId = $id->id;
