@@ -36,9 +36,9 @@ return [
     ],
 
     'github' => [
-        'client_id' => 'your-github-app-id',
-        'client_secret' => 'your-github-app-secret',
-        'redirect' => 'http://your-callback-url',
+        'client_id' => env('GITHUB_CLIENT_ID'),
+        'client_secret' => env('GITHUB_CLIENT_SECRET'),
+        'redirect' => 'http://red-jedi-backend.herokuapp.com/api/github/callback',
     ],
 
 ];
