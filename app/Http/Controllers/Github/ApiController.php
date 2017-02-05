@@ -65,8 +65,8 @@ class ApiController extends Controller
                         $repo = Repo::where(['repoId' =>$value['id'], 'userId' => $user->id])->first();
                     }
 
-                    if($keys == 1)
-                        return $value;
+                    // if($keys == 1)
+                    //     return $value;
                     $repo->name = $value['name'];
                     $repo->fullName = $value['full_name'];
                     $repo->description = $value['description'];
