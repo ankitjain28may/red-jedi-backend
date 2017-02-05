@@ -31,6 +31,8 @@ class ApiController extends Controller
             1 => 'users/'.$user->login.'/repos?type=member&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
             ];
 
+            Repo::where(['userId' => $user->id])->update(['weeklyCommits' => 0, 'totalWeeklyCommits' => 0]);
+
             foreach ($api as $keys => $url) {
                 $res = $client->request(
                     'GET', $url
@@ -39,10 +41,6 @@ class ApiController extends Controller
                 $result = $res->getBody();
 
                 $result = json_decode($result, true);
-
-                Repo::where(['userId' => $user->id])->update(['weeklyCommits' => 0, 'totalWeeklyCommits' => 0]);
-
-                Repo::where(['userId' => $user->id])->get();
 
                 foreach ($result as $key => $value) {
 
