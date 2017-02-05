@@ -21,4 +21,4 @@ Route::get('/api/github/user/callback', 'Github\GitAuthController@add');
 
 Route::resource('/api/guzz', 'Github\ApiController');
 
-Route::get('/api/leaderboard', 'Github\LeaderboardController@index');
+
