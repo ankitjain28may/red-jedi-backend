@@ -24,15 +24,14 @@ class ApiController extends Controller
 
             $weeklyCommits = 0;
 
-            $client = new Client();
+            $client = new Client(['base_uri' => 'https://api.github.com/']);
 
             $api = [
-            0 => 'https://api.github.com/users/'.$user->login.'/repos?type=owner&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
-            // 1 => 'https://api.github.com/users/'.$user->login.'/repos?type=member&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+            0 => 'users/'.$user->login.'/repos?type=owner&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET'),
+            1 => 'users/'.$user->login.'/repos?type=member&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
             ];
 
             foreach ($api as $keys => $url) {
-
                 $res = $client->request(
                     'GET', $url
                 );
@@ -66,6 +65,8 @@ class ApiController extends Controller
                         $repo = Repo::where(['repoId' =>$value['id'], 'userId' => $user->id])->first();
                     }
 
+                    if($keys == 1)
+                        return $value;
                     $repo->name = $value['name'];
                     $repo->fullName = $value['full_name'];
                     $repo->description = $value['description'];
@@ -74,7 +75,7 @@ class ApiController extends Controller
                     $repo->language = $value['language'];
 
                     $res = $client->request(
-                        'GET', 'https://api.github.com/repos/'.$value['full_name'].'/stats/participation?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+                        'GET', 'repos/'.$value['full_name'].'/stats/participation?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
                     );
 
                     $commits = $res->getBody();
