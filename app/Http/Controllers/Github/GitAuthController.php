@@ -184,22 +184,24 @@ class GitAuthController extends Controller
                 $repo->language = $value['language'];
 
                 $res = $client->request(
-                    'GET', 'https://api.github.com/repos/'.$value['full_name'].'/stats/participation?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+                    'GET', 'repos/'.$value['full_name'].'/stats/contributors?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
                 );
 
                 $commits = $res->getBody();
                 $commits = json_decode($commits, true);
 
-                if ($commits != null) {
-                    if ($commits['owner'] != null) {
-                        $repo->weeklyCommits = end($commits['owner']);
+                $totalCommits = 0;
+
+                foreach ($commits as $option => $check) {
+                    if ($check['author']['id'] == $id->userId) {
+                        $repo->weeklyCommits = end($check['weeks'])['c'];
                         $weeklyCommits += $repo->weeklyCommits;
                     }
 
-                    if ($commits['all'] != null) {
-                        $repo->totalWeeklyCommits = end($commits['all']);
-                    }
+                    $totalCommits += end($check['weeks'])['c'];
                 }
+                $repo->totalWeeklyCommits = $totalCommits;
+
                 $repo->save();
             }
         }
