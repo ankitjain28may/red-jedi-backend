@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Github;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Socialite;
+use Redirect;
+
 
 class GitAuthController extends Controller
 {
@@ -72,7 +74,7 @@ class GitAuthController extends Controller
      */
     public function edit($id)
     {
-        //
+        return Redirect::to('http://ankitjain28may.github.io');
     }
 
     /**
