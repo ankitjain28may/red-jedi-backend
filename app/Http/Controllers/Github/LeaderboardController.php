@@ -52,7 +52,7 @@ class LeaderboardController extends Controller
      */
     public function allUsers()
     {
-        $repo = User::get(['name', 'userId']);
+        $repo = User::get(['name', 'userId', 'login']);
         return $repo;
     }
 }
