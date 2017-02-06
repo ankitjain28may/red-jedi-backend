@@ -18,3 +18,9 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::middleware('cors')->get('/leaderboard', 'Github\LeaderboardController@index');
+
+Route::middleware('cors')->get('/github/show', 'Github\GitAuthController@show');
+
+// Route::middleware('cors')->get('/github/update', 'Github\GitAuthController@update');
+
+// Route::middleware('cors')->get('/github/user/callback', 'Github\GitAuthController@callback');

@@ -25,71 +25,16 @@ class GitAuthController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
      * Display the specified resource.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show()
     {
         return Repo::all();
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        return Redirect::to('http://ankitjain28may.github.io');
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
-
 
     /**
      * Display the specified resource.
@@ -97,7 +42,7 @@ class GitAuthController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function add()
+    public function callback(Request $request)
     {
         $user = Socialite::driver('github')->user();
 
@@ -134,21 +79,60 @@ class GitAuthController extends Controller
 
             $user->save();
         }
-        $id = User::where('userId', $getUser['userId'])->first();
+        $user = User::where('userId', $getUser['userId'])->first();
 
+        $weeklyCommits = $this->api($user);
+
+        User::find($user->id)->update(['weeklyCommits' => $weeklyCommits]);
+
+        return Redirect::to('http://redjedi.surge.sh/');
+
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function update()
+    {
+        foreach (User::all() as $key => $user) {
+
+            Repo::where(['userId' => $user->id])->update(['weeklyCommits' => 0, 'totalWeeklyCommits' => 0]);
+
+            $weeklyCommits = $this->api($user);
+
+            User::find($user->id)->update(['weeklyCommits' => $weeklyCommits]);
+        }
+        return Redirect::to('/');
+    }
+
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function api($user)
+    {
         $weeklyCommits = 0;
-
         $client = new Client(['base_uri' => 'https://api.github.com/']);
 
+        $params = [
+            'client_id' => env('GITHUB_CLIENT_ID'),
+            'client_secret' => env('GITHUB_CLIENT_SECRET')
+        ];
+
         $api = [
-            0 => 'users/'.$id->login.'/repos?type=owner&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET'),
-            1 => 'users/'.$id->login.'/repos?type=member&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+            0 => 'users/'.$user->login.'/repos?type=owner&sort=pushed',
+            1 => 'users/'.$user->login.'/repos?type=member&sort=pushed'
         ];
 
 
         foreach ($api as $keys => $url) {
+
             $res = $client->request(
-                'GET', $url
+                'GET', $url.'&'.http_build_query($params)
             );
 
             $result = $res->getBody();
@@ -157,7 +141,7 @@ class GitAuthController extends Controller
 
             foreach ($result as $key => $value) {
 
-                $identifier = $value['id'].":".$id->id;
+                $identifier = $value['id'].":".$user->id;
                 $validator = Validator::make(
                     [
                     'identifier' => $identifier,
@@ -169,12 +153,13 @@ class GitAuthController extends Controller
 
                 if (!$validator->fails()) {
                     $repo = new Repo;
-                    $repo->userId = $id->id;
+                    $repo->userId = $user->id;
                     $repo->repoId = $value['id'];
                     $repo->identifier = $identifier;
                 } else {
                     $repo = Repo::where(['identifier' => $identifier])->first();
                 }
+
 
                 $repo->name = $value['name'];
                 $repo->fullName = $value['full_name'];
@@ -184,7 +169,7 @@ class GitAuthController extends Controller
                 $repo->language = $value['language'];
 
                 $res = $client->request(
-                    'GET', 'repos/'.$value['full_name'].'/stats/contributors?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+                    'GET', 'repos/'.$value['full_name'].'/stats/contributors?'.http_build_query($params)
                 );
 
                 $commits = $res->getBody();
@@ -193,7 +178,7 @@ class GitAuthController extends Controller
                 $totalCommits = 0;
                 if ($commits != null) {
                     foreach ($commits as $option => $check) {
-                        if ($check['author']['id'] == $id->userId) {
+                        if ($check['author']['id'] == $user->userId) {
                             $repo->weeklyCommits = end($check['weeks'])['c'];
                             $weeklyCommits += $repo->weeklyCommits;
                         }
@@ -207,11 +192,7 @@ class GitAuthController extends Controller
                 $repo->save();
             }
         }
-
-        User::find($id->id)->update(['weeklyCommits' => $weeklyCommits]);
-
-        return Redirect::to('http://redjedi.surge.sh/');
-
+        return $weeklyCommits;
     }
 
 }

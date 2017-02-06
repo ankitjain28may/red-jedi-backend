@@ -26,16 +26,21 @@ class ApiController extends Controller
 
             $client = new Client(['base_uri' => 'https://api.github.com/']);
 
+            $params = [
+                'client_id' => env('GITHUB_CLIENT_ID'),
+                'client_secret' => env('GITHUB_CLIENT_SECRET')
+            ];
+
             $api = [
-                0 => 'users/'.$user->login.'/repos?type=owner&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET'),
-                1 => 'users/'.$user->login.'/repos?type=member&sort=pushed&client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+                0 => 'users/'.$user->login.'/repos?type=owner&sort=pushed',
+                1 => 'users/'.$user->login.'/repos?type=member&sort=pushed'
             ];
 
             Repo::where(['userId' => $user->id])->update(['weeklyCommits' => 0, 'totalWeeklyCommits' => 0]);
 
             foreach ($api as $keys => $url) {
                 $res = $client->request(
-                    'GET', $url
+                    'GET', $url.'&'.http_build_query($params)
                 );
 
                 $result = $res->getBody();
@@ -73,7 +78,7 @@ class ApiController extends Controller
                         $repo->language = $value['language'];
 
                         $res = $client->request(
-                            'GET', 'repos/'.$value['full_name'].'/stats/contributors?client_id='.env('GITHUB_CLIENT_ID').'&client_secret='.env('GITHUB_CLIENT_SECRET')
+                            'GET', 'repos/'.$value['full_name'].'/stats/contributors?'.http_build_query($params)
                         );
 
                         $commits = $res->getBody();
@@ -100,71 +105,5 @@ class ApiController extends Controller
             User::find($user->id)->update(['weeklyCommits' => $weeklyCommits]);
         }
         return Redirect::to('/');
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        return Repo::all();
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
     }
 }
