@@ -177,7 +177,7 @@ class GitAuthController extends Controller
                 $commits = json_decode($commits, true);
 
                 $totalCommits = 0;
-                if ($commits != null) {
+                if (!empty($commits)) {
                     foreach ($commits as $option => $check) {
                         if ($check['author']['id'] == $user->userId) {
                             $repo->weeklyCommits = end($check['weeks'])['c'];
