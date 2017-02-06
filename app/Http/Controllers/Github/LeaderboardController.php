@@ -18,7 +18,13 @@ class LeaderboardController extends Controller
      */
     public function topUser()
     {
-        $user = User::orderBy('weeklyCommits', 'DESC')->get();;
+        $input = Input::all();
+        $limit = 10;
+        if(!empty($input))
+        {
+            $limit = $input['limit'];
+        }
+        $user = User::orderBy('weeklyCommits', 'DESC')->take($limit)->get();;
         return $user;
     }
 
@@ -29,7 +35,13 @@ class LeaderboardController extends Controller
      */
     public function topRepo()
     {
-        $repo = Repo::orderBy('totalWeeklyCommits', 'DESC')->orderBy('stars', 'DESC')->orderBy('forks', 'DESC')->get();
+        $input = Input::all();
+        $limit = 10;
+        if(!empty($input))
+        {
+            $limit = $input['limit'];
+        }
+        $repo = Repo::orderBy('totalWeeklyCommits', 'DESC')->orderBy('stars', 'DESC')->orderBy('forks', 'DESC')->take($limit)->get();
         return $repo;
     }
 
