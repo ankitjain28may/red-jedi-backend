@@ -24,8 +24,8 @@ class LeaderboardController extends Controller
         {
             $limit = $input['limit'];
         }
-        $user = User::orderBy('weeklyCommits', 'DESC')->take($limit)->get();;
-        return $user;
+        $user = User::orderBy('weeklyCommits', 'DESC')->get();;
+        return $user->take($limit);
     }
 
     /**
@@ -51,6 +51,17 @@ class LeaderboardController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function allUsers()
+    {
+        $repo = User::get(['name', 'userId', 'login']);
+        return $repo;
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function sum()
     {
         $repo = User::get(['name', 'userId', 'login']);
         return $repo;

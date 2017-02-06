@@ -105,7 +105,7 @@ class GitAuthController extends Controller
 
             User::find($user->id)->update(['weeklyCommits' => $weeklyCommits]);
         }
-        return Redirect::to('/');
+        return Redirect::to('http://redjedi.surge.sh/');
     }
 
 
