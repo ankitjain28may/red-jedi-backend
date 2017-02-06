@@ -23,8 +23,8 @@ class Repo extends Migration
             $table->string('repoId');
             $table->string('identifier')->unique();
             $table->string('language')->nullable();
-            $table->string('weeklyCommits')->nullable();
-            $table->string('totalWeeklyCommits')->nullable();
+            $table->integer('weeklyCommits')->nullable();
+            $table->integer('totalWeeklyCommits')->nullable();
             $table->unsignedInteger('userId');
             $table->timestamps();
             $table->foreign('userId')->references('id')->on('users');

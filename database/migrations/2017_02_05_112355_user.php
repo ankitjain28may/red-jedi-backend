@@ -19,8 +19,8 @@ class User extends Migration
             $table->string('email')->unique();
             $table->string('login');
             $table->string('userId')->unique();
-            $table->string('weeklyCommits')->nullable();
-            $table->string('totalCommits')->nullable();
+            $table->integer('weeklyCommits')->nullable();
+            $table->integer('totalCommits')->nullable();
             $table->timestamps();
         });
     }
