@@ -41,8 +41,8 @@ class LeaderboardController extends Controller
         {
             $limit = $input['limit'];
         }
-        $repo = Repo::orderBy('totalWeeklyCommits', 'DESC')->orderBy('weeklyCommits', 'DESC')->orderBy('stars', 'DESC')->orderBy('forks', 'DESC')->take($limit)->get();
-        return $repo;
+        $repo = Repo::orderBy('totalWeeklyCommits', 'DESC')->orderBy('weeklyCommits', 'DESC')->orderBy('stars', 'DESC')->orderBy('forks', 'DESC')->get();
+        return $repo->take($limit);
     }
 
     /**
