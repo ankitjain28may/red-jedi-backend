@@ -16,9 +16,31 @@ class LeaderboardController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function topUser()
     {
-        $user = User::all()->sortBy('weeklyCommits');
+        $user = User::orderBy('weeklyCommits', 'DESC')->get();;
         return $user;
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function topRepo()
+    {
+        $repo = Repo::orderBy('totalWeeklyCommits', 'DESC')->get();
+        return $repo;
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function allUsers()
+    {
+        $repo = User::get(['name', 'userId']);
+        return $repo;
     }
 }

@@ -17,7 +17,12 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::middleware('cors')->get('/leaderboard', 'Github\LeaderboardController@index');
+Route::middleware('cors')->get('/leaderboard', 'Github\LeaderboardController@topUser');
+
+Route::middleware('cors')->get('/topRepos', 'Github\LeaderboardController@topRepo');
+
+Route::middleware('cors')->get('/allUsers', 'Github\LeaderboardController@allUsers');
+
 
 Route::middleware('cors')->get('/github/show', 'Github\GitAuthController@show');
 
