@@ -79,6 +79,7 @@ class GitAuthController extends Controller
 
             $user->save();
         }
+
         $user = User::where('userId', $getUser['userId'])->first();
 
         $weeklyCommits = $this->api($user);

@@ -18,8 +18,8 @@ class Repo extends Migration
             $table->string('name');
             $table->string('fullName');
             $table->text('description')->nullable();
-            $table->string('stars')->nullable();
-            $table->string('forks')->nullable();
+            $table->integer('stars')->nullable();
+            $table->integer('forks')->nullable();
             $table->string('repoId');
             $table->string('identifier')->unique();
             $table->string('language')->nullable();

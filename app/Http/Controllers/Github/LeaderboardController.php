@@ -29,7 +29,7 @@ class LeaderboardController extends Controller
      */
     public function topRepo()
     {
-        $repo = Repo::orderBy('totalWeeklyCommits', 'DESC')->get();
+        $repo = Repo::orderBy('totalWeeklyCommits', 'DESC')->orderBy('stars', 'DESC')->orderBy('forks', 'DESC')->get();
         return $repo;
     }
 
