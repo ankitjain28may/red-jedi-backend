@@ -19,6 +19,9 @@ Route::get('/api/github/auth', 'Github\GitAuthController@index');
 Route::get('/api/github/update', 'Github\GitAuthController@update');
 Route::get('/api/github/user/callback', 'Github\GitAuthController@callback');
 
+// Route::get('/api/check', 'Github\LeaderboardController@check');
+
+
 Route::resource('/api/guzz', 'Github\ApiController');
 
 // Route::get('/{any}', function() {

@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Model\User;
 use App\Model\Repo;
 use Illuminate\Support\Facades\Input;
+use GuzzleHttp\Psr7\Request as Requests;
+use GuzzleHttp\Client;
 
 
 class LeaderboardController extends Controller
@@ -65,5 +67,15 @@ class LeaderboardController extends Controller
     {
         $repo = User::get(['name', 'userId', 'login']);
         return $repo;
+    }
+
+
+    public function check()
+    {
+        $client = new Client();
+        $request = new Requests('GET', 'https://api.github.com/repos/ankitjain28may/openchat/stats/contributors');
+        $response = $client->send($request);
+
+        return dd($response->getBody());
     }
 }
