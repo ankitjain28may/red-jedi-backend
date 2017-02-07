@@ -24,7 +24,3 @@ Route::get('/api/github/user/callback', 'Github\GitAuthController@callback');
 
 Route::resource('/api/guzz', 'Github\ApiController');
 
-// Route::get('/{any}', function() {
-//     return View('error');
-// });
-

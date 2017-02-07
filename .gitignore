@@ -13,6 +13,7 @@ bootstrap/cache/
 .env.*.php
 .env.php
 .env
+.env.heroku
 
 # Rocketeer PHP task runner and deployment package. https://github.com/rocketeers/rocketeer
 .rocketeer/
